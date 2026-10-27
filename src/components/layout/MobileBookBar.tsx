@@ -2,9 +2,10 @@ import React from 'react';
 import { Calendar, Phone } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { clinicSettings } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
 
 export const MobileBookBar: React.FC = () => {
+  const clinicSettings = useSettings();
   const { t } = useLanguage();
   const { openBooking } = useBooking();
 

@@ -4,9 +4,10 @@ import SectionOpener from '../ui/SectionOpener';
 import Reveal from '../motion/Reveal';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { doctors } from '../../data/clinicData';
+import { useDoctors } from '../../context/DataContext';
 
 export const DoctorsSection: React.FC = () => {
+  const doctors = useDoctors();
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
 

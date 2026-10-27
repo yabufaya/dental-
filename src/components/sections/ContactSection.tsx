@@ -4,10 +4,11 @@ import SectionOpener from '../ui/SectionOpener';
 import Reveal from '../motion/Reveal';
 import ContactMap from './ContactMap';
 import { useLanguage } from '../../context/LanguageContext';
-import { clinicSettings } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
 import { getOpenStatus } from '../../utils/hours';
 
 export const ContactSection: React.FC = () => {
+  const clinicSettings = useSettings();
   const { language, t } = useLanguage();
   const [formSent, setFormSent] = useState(false);
   const [name, setName] = useState('');
@@ -226,6 +227,7 @@ export const ContactSection: React.FC = () => {
               hours={clinicSettings.hours}
               lat={clinicSettings.lat}
               lng={clinicSettings.lng}
+              mapEmbedUrl={clinicSettings.mapEmbedUrl}
             />
           </Reveal>
 
@@ -233,7 +235,7 @@ export const ContactSection: React.FC = () => {
           <div className="p-4 rounded-2xl bg-white border border-teal-100 text-xs text-slate-600 flex items-center gap-3.5 shadow-xs">
             <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
               <img
-                src="/src/assets/images/clinic.jpg"
+                src="/images/clinic.jpg"
                 alt="Dentora entrance"
                 className="w-full h-full object-cover"
               />

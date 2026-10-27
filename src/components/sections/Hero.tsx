@@ -2,9 +2,12 @@ import React from 'react';
 import { ArrowRight, Phone, Star, Sparkles, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { clinicSettings, services } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
+import { useServices } from '../../context/DataContext';
 
 export const Hero: React.FC = () => {
+  const clinicSettings = useSettings();
+  const services = useServices(); // featured chips
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
 
@@ -18,7 +21,7 @@ export const Hero: React.FC = () => {
         {/* Background Image with Dark Soft Gradient Overlay for pristine contrast */}
         <div className="absolute inset-0 z-0">
           <img
-            src="/src/assets/images/hero.jpg"
+            src="/images/hero.jpg"
             alt="Family-Friendly Dental Care at Dentora"
             fetchPriority="high"
             className="w-full h-full object-cover object-center filter brightness-[0.78] contrast-[1.05]"

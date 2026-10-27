@@ -5,7 +5,7 @@ import SectionOpener from '../ui/SectionOpener';
 import Reveal from '../motion/Reveal';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { services } from '../../data/clinicData';
+import { useServices } from '../../context/DataContext';
 
 const ICONS_MAP: Record<string, React.ReactNode> = {
   Sparkles: <Sparkles className="w-4 h-4 text-[#2ba8c9]" />,
@@ -19,6 +19,7 @@ const ICONS_MAP: Record<string, React.ReactNode> = {
 };
 
 export const ServicesSection: React.FC = () => {
+  const services = useServices(); // live DB rows (active only), static fallback
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
 

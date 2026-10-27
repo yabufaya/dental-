@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, User, Phone, CheckCircle, Shield, AlertCircle, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Calendar, Clock, User, Phone, CheckCircle, Shield, AlertCircle, ChevronRight, Lock } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { services, doctors, clinicSettings } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
+import { useServices, useDoctors } from '../../context/DataContext';
+import { supabase } from '../../lib/supabase';
+import { ALL_SLOTS, formatSlot, isClosedDate, slotState } from '../../lib/slots';
 
-const AVAILABLE_SLOTS = [
-  '09:00 AM',
-  '10:15 AM',
-  '11:30 AM',
-  '02:00 PM',
-  '03:15 PM',
-  '04:30 PM',
-];
-
+/** Generate 24h slot value ('08:30') from a label ('8:30 AM') — not needed,
+ *  the grid now stores canonical 24h values directly. */
 export const BookingModal: React.FC = () => {
+  const clinicSettings = useSettings();
+  const services = useServices();
+  const doctors = useDoctors();
   const { language, t } = useLanguage();
   const { isBookingOpen, closeBooking, selectedServiceId, selectedDoctorId } = useBooking();
 
@@ -25,13 +24,19 @@ export const BookingModal: React.FC = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
   });
-  const [timeSlot, setTimeSlot] = useState<string>('10:15 AM');
+  const [timeSlot, setTimeSlot] = useState<string>(''); // canonical 'HH:mm'
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [consent, setConsent] = useState(true);
   const [bookingRef, setBookingRef] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  // Taken slots for the chosen date (from the public-safe booked_slots view)
+  const [taken, setTaken] = useState<ReadonlySet<string>>(new Set());
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  const closed = useMemo(() => isClosedDate(date, clinicSettings.hours), [date, clinicSettings.hours]);
 
   // Sync props when opening modal with pre-selected options
   useEffect(() => {
@@ -40,23 +45,82 @@ export const BookingModal: React.FC = () => {
     setStep(1);
   }, [selectedServiceId, selectedDoctorId, isBookingOpen]);
 
+  // Whenever the date changes → ask the DB which slots are already taken.
+  useEffect(() => {
+    if (closed) { setTaken(new Set()); return; }
+    let cancelled = false;
+    setSlotsLoading(true);
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('booked_slots')
+          .select('time_slot')
+          .eq('preferred_date', date);
+        if (!cancelled) setTaken(new Set((data ?? []).map((r) => (r as { time_slot: string }).time_slot)));
+      } catch {
+        if (!cancelled) setTaken(new Set()); // view missing → optimistic, DB index still guards
+      } finally {
+        if (!cancelled) setSlotsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [date, closed]);
+
   if (!isBookingOpen) return null;
 
   const selectedService = services.find((s) => s.id === serviceId) || services[0];
   const selectedDoctor = doctors.find((d) => d.id === doctorId);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !consent) return;
+    if (!name.trim() || !phone.trim() || !consent || !timeSlot) return;
 
     setIsSubmitting(true);
-    // Simulate booking save
-    setTimeout(() => {
-      const ref = `DEN-${Math.floor(100000 + Math.random() * 900000)}`;
-      setBookingRef(ref);
-      setIsSubmitting(false);
-      setStep(2);
-    }, 600);
+    setSubmitError(null);
+
+    // Booking reference shown to the patient AND stored with the row,
+    // so the admin can find it instantly in the dashboard.
+    const ref = `DEN-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    // ── REAL submission: public INSERT allowed by RLS;
+    //    reading/updating stays admin-only, so patient data is safe.
+    //    Double-booking is additionally blocked by the DB unique index
+    //    bookings_active_slot_unique → Postgres code 23505. ──
+    const { error } = await supabase.from('bookings').insert({
+      booking_ref: ref,
+      patient_name: name.trim(),
+      phone: phone.trim(),
+      service_id: serviceId,
+      doctor_id: doctorId === 'any' ? null : doctorId,
+      preferred_date: date,
+      time_slot: timeSlot,
+      notes: notes.trim() || null,
+    });
+
+    setIsSubmitting(false);
+    if (error) {
+      console.error('Booking insert failed:', error);
+      if (error.code === '23505') {
+        // The slot was taken in the exact moment we tried to book it.
+        setTaken((prev) => new Set(prev).add(timeSlot));
+        setSubmitError(
+          language === 'am'
+            ? 'ይህ ሰዓት መ刚从ም ተያዟል — እባክዎ ሌላ ይምረጡ 🔒'
+            : 'That slot was just taken — please pick another one 🔒'
+        );
+        setTimeSlot('');
+        return;
+      }
+      setSubmitError(
+        language === 'am'
+          ? 'መላክ አልተሳካም። እባክዎ ደግመው ይሞክሩ ወይም በስልክ ያግኙን።'
+          : `Could not submit right now (${error.message}). Please try again or call us.`
+      );
+      return;
+    }
+
+    setBookingRef(ref);
+    setStep(2);
   };
 
   return (
@@ -156,26 +220,56 @@ export const BookingModal: React.FC = () => {
                   />
                 </div>
 
-                <div>
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                     4. {t('Available Slot', 'ሰዓት ይምረጡ')}
+                    <span className="normal-case font-normal text-slate-400 ml-2">
+                      {t('(30 min each, 8:00 AM – 4:30 PM starts)', '(እያንዳንዱ 30 ደቂቃ)')}
+                    </span>
                   </label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {AVAILABLE_SLOTS.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setTimeSlot(slot)}
-                        className={`py-2 text-[11px] font-semibold rounded-lg border text-center transition-all ${
-                          timeSlot === slot
-                            ? 'bg-[#2ba8c9] text-slate-950 border-[#2ba8c9] shadow-xs'
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
+
+                  {closed ? (
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
+                      {t('The clinic is closed this day — please pick another date.', 'ክሊኒኩ በዚህ ቀን ዝግ ነው — ሌላ ቀን ይምረጡ።')}
+                    </div>
+                  ) : (
+                    <>
+                      {slotsLoading && (
+                        <p className="text-[11px] text-slate-400 mb-1">{t('Checking availability…', 'ክፍት ጊዜዎችን በማረጋገጥ ላይ…')}</p>
+                      )}
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                        {ALL_SLOTS.map((slot) => {
+                          const st = slotState(date, slot, clinicSettings.hours, taken);
+                          const disabled = st !== 'available';
+                          const selected = timeSlot === slot.value;
+                          return (
+                            <button
+                              key={slot.value}
+                              type="button"
+                              disabled={disabled}
+                              onClick={() => setTimeSlot(slot.value)}
+                              title={
+                                st === 'taken' ? t('Already booked', 'ተይዟል')
+                                : st === 'tooSoon' ? t('Needs 2h lead time', '2 ሰዓት አስቀድሞ ይያዙ')
+                                : st === 'past' ? t('Already passed', 'አልፏል')
+                                : slot.label
+                              }
+                              className={`py-2 text-[11px] font-semibold rounded-lg border text-center transition-all flex items-center justify-center gap-1 ${
+                                selected
+                                  ? 'bg-[#2ba8c9] text-slate-950 border-[#2ba8c9] shadow-xs'
+                                  : disabled
+                                    ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed line-through'
+                                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              {st === 'taken' && <Lock className="w-2.5 h-2.5" />}
+                              {slot.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -235,6 +329,16 @@ export const BookingModal: React.FC = () => {
                 </label>
               </div>
 
+              {submitError && (
+                <div
+                  role="alert"
+                  className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{submitError}</span>
+                </div>
+              )}
+
               {/* Submit Button */}
               <div className="pt-2">
                 <button
@@ -282,7 +386,7 @@ export const BookingModal: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">{t('Date & Time:', 'ቀንና ሰዓት:')}</span>
-                  <strong className="text-[#1c88a6]">{date} at {timeSlot}</strong>
+                  <strong className="text-[#1c88a6]">{date} at {formatSlot(timeSlot)}</strong>
                 </div>
                 <div className="flex justify-between pt-1 border-t border-slate-200">
                   <span className="text-slate-500">{t('Estimated Cost:', 'መነሻ ክፍያ:')}</span>

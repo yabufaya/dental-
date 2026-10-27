@@ -3,9 +3,10 @@ import { Star, Award, Globe, ArrowRight, ShieldCheck } from 'lucide-react';
 import Reveal from '../components/motion/Reveal';
 import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../context/BookingContext';
-import { doctors } from '../data/clinicData';
+import { useDoctors } from '../context/DataContext';
 
 export const DoctorsPage: React.FC = () => {
+  const doctors = useDoctors();
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
 

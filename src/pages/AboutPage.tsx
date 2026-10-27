@@ -3,9 +3,19 @@ import { ShieldCheck, Heart, Sparkles, Award, CheckCircle2 } from 'lucide-react'
 import Reveal from '../components/motion/Reveal';
 import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../context/BookingContext';
-import { clinicStats, clinicSettings } from '../data/clinicData';
+import { clinicStats as fallbackStats } from '../data/clinicData';
+import { useSettings } from '../context/SettingsContext';
+import type { ClinicStats } from '../types/clinic';
 
 export const AboutPage: React.FC = () => {
+  const clinicSettings = useSettings();
+  const clinicStats: ClinicStats = {
+    satisfactionRate: clinicSettings.satisfactionRate ?? fallbackStats.satisfactionRate,
+    smilesTransformed: clinicSettings.smilesTransformed ?? fallbackStats.smilesTransformed,
+    patientRating: clinicSettings.patientRating ?? fallbackStats.patientRating,
+    yearsExperience: clinicSettings.yearsExperience ?? fallbackStats.yearsExperience,
+    specialistCount: clinicSettings.specialistCount ?? fallbackStats.specialistCount,
+  };
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
 
@@ -30,7 +40,7 @@ export const AboutPage: React.FC = () => {
       {/* Main Image Banner */}
       <div className="rounded-3xl overflow-hidden shadow-xl aspect-[16/9] relative">
         <img
-          src="/src/assets/images/clinic.jpg"
+          src="/images/clinic.jpg"
           alt="Dentora operatory room"
           className="w-full h-full object-cover"
         />

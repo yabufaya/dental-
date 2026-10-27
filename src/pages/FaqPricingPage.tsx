@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle, Shield, CreditCard, Calendar } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../context/BookingContext';
-import { services, frequentlyAskedQuestions, clinicSettings } from '../data/clinicData';
+import { frequentlyAskedQuestions } from '../data/clinicData';
+import { useSettings } from '../context/SettingsContext';
+import { useServices } from '../context/DataContext';
 
 export const FaqPricingPage: React.FC = () => {
+  const clinicSettings = useSettings();
+  const services = useServices(); // pricing table rows
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
   const [openFaq, setOpenFaq] = useState<number | null>(0);

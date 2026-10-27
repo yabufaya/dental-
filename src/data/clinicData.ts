@@ -18,6 +18,15 @@ export const clinicSettings: ClinicSettings = {
   landmarkAm: 'ከሞርኒንግ ስታር ሞል ጎን፣ ከኤድና ሞል ፊት ለፊት',
   lat: 8.9984,
   lng: 38.7882,
+  mapEmbedUrl: 'https://maps.google.com/maps?q=8.9984,38.7882&hl=en&z=15&output=embed',
+  // Social links — empty string = link hidden on the site (fallback data only;
+  // live values come from the clinic_settings row).
+  facebookUrl: 'https://facebook.com/dentoradental',
+  instagramUrl: 'https://instagram.com/dentoradental',
+  linkedinUrl: '',
+  tiktokUrl: '',
+  youtubeUrl: '',
+  xUrl: '',
   hours: {
     mon: { open: '08:30', close: '17:30' },
     tue: { open: '08:30', close: '17:30' },
@@ -369,8 +378,8 @@ export const testimonials: Testimonial[] = [
     quote: 'I used to hide my smile during photos because of coffee stains and old chipped fillings. In just one 50-minute session at Dentora, my confidence was completely restored. Truly gentle and zero pain!',
     quoteAm: 'በቡና ነጠብጣብ ምክንያት ፈገግ ለማለት እሸማቀቅ ነበር። በዴንቶራ ክሊኒክ በአንድ ሰዓት ውስጥ ያገኘሁት ውጤት አስደናቂ ነው!',
     date: 'March 2026',
-    beforeUrl: '/src/assets/images/before.jpg',
-    afterUrl: '/src/assets/images/after.jpg',
+    beforeUrl: '/images/before.jpg',
+    afterUrl: '/images/after.jpg',
     beforeAfterAlt: 'Teeth whitening cosmetic transformation',
     consent: true,
   },

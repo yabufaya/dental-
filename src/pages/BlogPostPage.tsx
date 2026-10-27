@@ -3,9 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Calendar, User, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../context/BookingContext';
-import { allBlogPosts } from '../data/clinicData';
+import { useBlogPosts } from '../context/DataContext';
 
 export const BlogPostPage: React.FC = () => {
+  const allBlogPosts = useBlogPosts();
   const { slug } = useParams<{ slug: string }>();
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();

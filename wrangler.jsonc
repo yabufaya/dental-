@@ -1,0 +1,22 @@
+{
+  // Cloudflare Workers Static Assets config for the Dentora site.
+  // This page-project deploys through Wrangler; this file is the source of truth.
+  "name": "dental",
+  "compatibility_date": "2026-10-01",
+
+  // Built files come from `dist` (npm run build) — never committed to git.
+  "assets": {
+    "directory": "./dist",
+    // ⭐ THE replacement for the old Pages `_redirects` SPA rule:
+    // unknown paths (e.g. /admin/bookings deep-links) get index.html with 200.
+    "not_found_handling": "single-page-application"
+  },
+
+  // Only build-time plumbing stays here — the VITE_* credentials moved
+  // into src/lib/supabase.ts as safe publishable defaults (baked at build
+  // time; runtime vars never reach a static site).
+  "vars": {
+    "NODE_VERSION": "22",
+    "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+  }
+}

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Bot, User, Phone, MessageSquare, AlertTriangle, Calendar, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { clinicSettings, services } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
+import { useServices } from '../../context/DataContext';
 
 interface ChatMessage {
   id: string;
@@ -35,6 +36,8 @@ const QUICK_QUESTIONS_AM = [
 ];
 
 export const ChatPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const clinicSettings = useSettings();
+  const services = useServices();
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
   const [messages, setMessages] = useState<ChatMessage[]>([

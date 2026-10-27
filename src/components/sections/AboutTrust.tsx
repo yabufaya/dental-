@@ -3,10 +3,21 @@ import SectionOpener from '../ui/SectionOpener';
 import Reveal from '../motion/Reveal';
 import CountUp from '../motion/CountUp';
 import { useLanguage } from '../../context/LanguageContext';
-import { clinicStats } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
+import { clinicStats as fallbackStats } from '../../data/clinicData';
+import type { ClinicStats } from '../../types/clinic';
 
 export const AboutTrust: React.FC = () => {
   const { language, t } = useLanguage();
+  const s = useSettings();
+  // Trust numbers: admin-edited settings row wins, bundled defaults fill gaps
+  const clinicStats: ClinicStats = {
+    satisfactionRate: s.satisfactionRate ?? fallbackStats.satisfactionRate,
+    smilesTransformed: s.smilesTransformed ?? fallbackStats.smilesTransformed,
+    patientRating: s.patientRating ?? fallbackStats.patientRating,
+    yearsExperience: s.yearsExperience ?? fallbackStats.yearsExperience,
+    specialistCount: s.specialistCount ?? fallbackStats.specialistCount,
+  };
 
   return (
     <SectionOpener
@@ -23,7 +34,7 @@ export const AboutTrust: React.FC = () => {
         <div className="lg:col-span-6 space-y-4">
           <div className="relative rounded-3xl overflow-hidden shadow-xl border border-emerald-100 aspect-[4/3]">
             <img
-              src="/src/assets/images/clinic.jpg"
+              src="/images/clinic.jpg"
               alt="Dentora Dental Clinic modern operatory room"
               loading="lazy"
               decoding="async"

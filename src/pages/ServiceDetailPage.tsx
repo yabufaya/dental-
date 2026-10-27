@@ -3,9 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Clock, ArrowLeft, CheckCircle2, AlertCircle, HelpCircle, Shield, Calendar } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../context/BookingContext';
-import { services } from '../data/clinicData';
+import { useServices } from '../context/DataContext';
 
 export const ServiceDetailPage: React.FC = () => {
+  const services = useServices();
   const { slug } = useParams<{ slug: string }>();
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();

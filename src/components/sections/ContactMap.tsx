@@ -13,6 +13,7 @@ interface ContactMapProps {
   hours: OpeningHours;
   lat: number;
   lng: number;
+  mapEmbedUrl?: string; // admin-provided Google "Embed a map" src — wins over lat/lng
   placeId?: string;
 }
 
@@ -24,6 +25,7 @@ export const ContactMap: React.FC<ContactMapProps> = ({
   hours,
   lat,
   lng,
+  mapEmbedUrl,
   placeId,
 }) => {
   const { language, t } = useLanguage();
@@ -40,8 +42,11 @@ export const ContactMap: React.FC<ContactMapProps> = ({
     `https://www.google.com/maps/search/?api=1&query=${lat},${lng}` +
     (placeId ? `&query_place_id=${placeId}` : '');
 
-  // Addis Ababa Bole Medhanialem embed coordinates
-  const embedUrl = `https://maps.google.com/maps?q=${lat},${lng}&hl=en&z=15&output=embed`;
+  // Prefer the admin-provided Google embed URL (from clinic_settings);
+  // otherwise fall back to a coordinate-based embed.
+  const embedUrl = mapEmbedUrl?.trim()
+    ? mapEmbedUrl.trim()
+    : `https://maps.google.com/maps?q=${lat},${lng}&hl=en&z=15&output=embed`;
 
   return (
     <div className="relative rounded-[24px] overflow-hidden bg-white border border-slate-200/90 shadow-xl flex flex-col">

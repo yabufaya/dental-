@@ -4,9 +4,10 @@ import { Clock, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import Reveal from '../components/motion/Reveal';
 import { useLanguage } from '../context/LanguageContext';
 import { useBooking } from '../context/BookingContext';
-import { services } from '../data/clinicData';
+import { useServices } from '../context/DataContext';
 
 export const ServicesPage: React.FC = () => {
+  const services = useServices();
   const { language, t } = useLanguage();
   const { openBooking } = useBooking();
   const [filter, setFilter] = useState<'all' | 'featured' | 'restorative'>('all');

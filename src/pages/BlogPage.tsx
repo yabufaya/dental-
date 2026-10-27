@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Clock, ArrowRight } from 'lucide-react';
 import Reveal from '../components/motion/Reveal';
 import { useLanguage } from '../context/LanguageContext';
-import { allBlogPosts } from '../data/clinicData';
+import { useBlogPosts } from '../context/DataContext';
 
 export const BlogPage: React.FC = () => {
+  const allBlogPosts = useBlogPosts();
   const { language, t } = useLanguage();
 
   return (

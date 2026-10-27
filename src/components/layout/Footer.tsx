@@ -3,11 +3,16 @@ import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, ShieldCheck, Heart, ArrowUp } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { clinicSettings } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
+import SocialIcons from '../ui/SocialIcons';
+
+const fmtHours = (v: { open: string; close: string } | null): string =>
+  v ? `${v.open} – ${v.close}` : '';
 
 export const Footer: React.FC = () => {
   const { t } = useLanguage();
   const { openBooking } = useBooking();
+  const clinicSettings = useSettings(); // live clinic_settings row (static fallback)
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,15 +102,21 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 text-xs text-slate-400">
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span>{t('Monday – Friday:', 'ከሰኞ – ዓርብ:')}</span>
-                <span className="font-semibold text-slate-200">08:30 – 17:30</span>
+                <span className="font-semibold text-slate-200">{fmtHours(clinicSettings.hours.mon)}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span>{t('Saturday:', 'ቅዳሜ:')}</span>
-                <span className="font-semibold text-slate-200">09:00 – 15:30</span>
+                <span className="font-semibold text-slate-200">
+                  {clinicSettings.hours.sat ? fmtHours(clinicSettings.hours.sat) : t('Closed', 'ዝግ')}
+                </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800">
                 <span>{t('Sunday:', 'እሑድ:')}</span>
-                <span className="text-amber-400 font-semibold">{t('Emergency only', 'ለአደጋ ብቻ')}</span>
+                {clinicSettings.hours.sun ? (
+                  <span className="font-semibold text-slate-200">{fmtHours(clinicSettings.hours.sun)}</span>
+                ) : (
+                  <span className="text-amber-400 font-semibold">{t('Emergency only', 'ለአደጋ ብቻ')}</span>
+                )}
               </div>
 
               <div className="mt-4 p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
@@ -163,6 +174,14 @@ export const Footer: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Social media row — links come from admin → Contact Info & Social */}
+        <div className="pt-10 pb-2 text-center">
+          <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
+            {t('Follow us', 'ተከተሉን')}
+          </span>
+          <SocialIcons settings={clinicSettings} />
         </div>
 
         {/* Bottom Bar: License, Compliance, Copyright & Back to top */}

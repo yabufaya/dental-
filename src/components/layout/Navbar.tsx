@@ -3,9 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Phone, Calendar, Globe } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBooking } from '../../context/BookingContext';
-import { clinicSettings } from '../../data/clinicData';
+import { useSettings } from '../../context/SettingsContext';
 
 export const Navbar: React.FC = () => {
+  const clinicSettings = useSettings();
   const { language, toggleLanguage, t } = useLanguage();
   const { openBooking } = useBooking();
   const [scrolled, setScrolled] = useState(false);

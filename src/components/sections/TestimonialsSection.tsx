@@ -4,9 +4,10 @@ import SectionOpener from '../ui/SectionOpener';
 import Reveal from '../motion/Reveal';
 import BeforeAfter from '../ui/BeforeAfter';
 import { useLanguage } from '../../context/LanguageContext';
-import { testimonials } from '../../data/clinicData';
+import { useTestimonials } from '../../context/DataContext';
 
 export const TestimonialsSection: React.FC = () => {
+  const testimonials = useTestimonials();
   const { language, t } = useLanguage();
 
   // Testimonial 1 is the verified clinical before/after transformation

@@ -4,10 +4,13 @@ import { BookOpen, Clock, ArrowRight } from 'lucide-react';
 import SectionOpener from '../ui/SectionOpener';
 import Reveal from '../motion/Reveal';
 import { useLanguage } from '../../context/LanguageContext';
-import { latestBlogPost } from '../../data/clinicData';
+import { useBlogPosts } from '../../context/DataContext';
+import { latestBlogPost as fallbackLatest } from '../../data/clinicData';
 
 export const LatestBlogSection: React.FC = () => {
   const { language, t } = useLanguage();
+  // newest published post from DB; empty list → bundled fallback post
+  const latestBlogPost = useBlogPosts()[0] ?? fallbackLatest;
 
   return (
     <SectionOpener

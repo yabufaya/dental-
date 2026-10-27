@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (used ONLY by the /admin zone via .dark wrapper) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --bg: #ffffff;
   --bg-soft: #f8fafc;

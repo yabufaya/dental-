@@ -113,7 +113,21 @@ export interface ClinicSettings {
   landmarkAm: string;
   lat: number;
   lng: number;
+  mapEmbedUrl?: string;
   placeId?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  tiktokUrl?: string;
+  youtubeUrl?: string;
+  xUrl?: string;
+  // Editable trust numbers (satisfaction_rate etc. on the same settings row;
+  // optional → the public site falls back to clinicData.clinicStats when unset)
+  satisfactionRate?: number;
+  smilesTransformed?: number;
+  patientRating?: number;
+  yearsExperience?: number;
+  specialistCount?: number;
   hours: OpeningHours;
   paymentMethods: string[];
   accessibility: string[];
